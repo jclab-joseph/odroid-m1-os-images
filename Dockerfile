@@ -65,5 +65,5 @@ RUN DISK_SIZE=$((ROOTFS_SIZE + 500 + 4)) && \
 
 FROM scratch
 
-COPY --from=builder ["/output/*", "/"]
+COPY --from=builder ["/work/output/*", "/"]
 
