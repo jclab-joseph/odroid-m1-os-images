@@ -15,7 +15,7 @@ RUN debootstrap \
     /work/rootfs \
     ${DEBIAN_MIRROR}
 
-RUN wget https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v4.19.219-r0/linux-image-4.19.219-odroid-arm64_4.19.219-odroid-arm64-1_arm64.deb && \
+RUN wget -O /tmp/kernel.deb https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v4.19.219-r0/linux-image-4.19.219-odroid-arm64_4.19.219-odroid-arm64-1_arm64.deb && \
     dpkg --install --force-architecture --root /work/rootfs/ /tmp/kernel.deb
 
 RUN mkdir -p /work/rootfs/etc/network
