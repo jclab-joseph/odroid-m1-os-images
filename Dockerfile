@@ -33,6 +33,7 @@ RUN echo "deb https://raw.githubusercontent.com/pimox/pimox7/master/ dev/" > /wo
 RUN ROOTFS_SIZE=$(du -sb /work/rootfs | sed -E 's/\t/ /g' | cut -d' ' -f1) && \
     ROOTFS_SIZE=$((ROOTFS_SIZE + 134217728 + 1048575)) && \
     ROOTFS_SIZE=$((ROOTFS_SIZE / 1048576)) && \
+    echo "export ROOTFS_SIZE=${ROOTFS_SIZE}" > /work/env && \
     rm -rf /work/rootfs/debootstrap && \
     mke2fs -L 'rootfs' \
     -N 0 \
@@ -57,7 +58,8 @@ RUN cp /work/rootfs/boot/* /work/boot/ && \
     500M
 
 COPY disk.txt /tmp/disk.txt
-RUN DISK_SIZE=$((ROOTFS_SIZE + 500 + 4)) && \
+RUN  . /work/env && \
+    DISK_SIZE=$((ROOTFS_SIZE + 500 + 4)) && \
     fallocate -l $((DISK_SIZE * 1024 * 1024)) /work/output/disk.img && \
     sfdisk /work/output/disk.img < /tmp/disk.txt && \
     dd if=/work/boot.ext4 of=/work/output/disk.img bs=512 seek=2048 conv=notrunc && \
