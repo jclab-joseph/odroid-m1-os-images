@@ -15,7 +15,10 @@ ROOTFS_SIZE=$(($ROOTFS_SIZE + $ROOTFS_ADD_SIZE))
 
 ROOTFS_OUT=/build/rootfs.ext4
 
-mke2fs -L 'rootfs' -U 5d7fe326-d149-4be7-a57c-b71ed13784c8 -N 0 -d "${ROOTFS_DIR}" -m 5 -r 1 -t ext4 "${ROOTFS_OUT}" ${ROOTFS_SIZE}M
+ROOTFS_UUID=5d7fe326-d149-4be7-a57c-b71ed13784c8
+KERNEL_VERSION=5.10.198-odroid-arm64
+
+mke2fs -L 'rootfs' -U ${ROOTFS_UUID} -N 0 -d "${ROOTFS_DIR}" -m 5 -r 1 -t ext4 "${ROOTFS_OUT}" ${ROOTFS_SIZE}M
 
 DISK_SIZE=$((1 + $BOOT_SIZE + $ROOTFS_SIZE))
 dd if=/dev/zero of=${DISK_OUT} bs=1M count=${DISK_SIZE}
@@ -58,6 +61,10 @@ cp target-setup.sh ${MOUNT_ROOT}/tmp/target-setup.sh
 cp tmp-copy/* ${MOUNT_ROOT}/tmp/
 
 cp ${BOOT_ADD_DIR}/* ${MOUNT_ROOT}/boot/
+mkdir -p ${MOUNT_ROOT}/boot/grub/
+
+sed "s/{ROOTFS_UUID}/${ROOTFS_UUID}/g; s/{KERNEL_VERSION}/${KERNEL_VERSION}/g" /build/boot.template/boot.txt > /build/boot.txt
+mkimage -A arm64 -T script -C none -n "boot script" -d /build/boot.txt ${MOUNT_ROOT}/boot/boot.scr
 
 chmod +x ${MOUNT_ROOT}/tmp/target-setup.sh
 chroot ${MOUNT_ROOT} /tmp/target-setup.sh

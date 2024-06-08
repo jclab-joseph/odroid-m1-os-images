@@ -28,11 +28,13 @@ image-rootfs:
 
 disk:
 	FROM alpine
-	RUN apk add bash e2fsprogs sfdisk mtools dosfstools losetup wget curl zstd
+	RUN apk add \
+	    bash e2fsprogs sfdisk mtools dosfstools losetup wget curl zstd \
+	    u-boot-tools
 	WORKDIR /build
-	BUILD --platform=linux/arm64 +image-rootfs
 	COPY --platform=linux/arm64 +image-rootfs/rootfs /build/rootfs
 	COPY boot /build/boot
+	COPY boot.template /build/boot.template
 	COPY extend-rootfs.sh /build/rootfs/opt/extend-rootfs.sh
 	RUN chmod +x /build/rootfs/opt/extend-rootfs.sh
 	
