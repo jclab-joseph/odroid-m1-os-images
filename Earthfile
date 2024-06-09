@@ -23,9 +23,7 @@ image-rootfs:
 	
 	RUN apt-get update && apt dist-upgrade -y && \
 	    apt install -y --no-install-recommends -o Dpkg::Options::="--force-confdef" pve-manager && \
-	    apt install -y-o Dpkg::Options::="--force-confdef" proxmox-ve
-	
-	RUN /bin/false
+	    apt install -y -o Dpkg::Options::="--force-confdef" proxmox-ve
 	
 	RUN for name in pve-cluster.service pve-firewall.service pve-guests.service pve-ha-crm.service pve-ha-lrm.service pvedaemon.service pvefw-logger.service pveproxy.service pvescheduler.service pvestatd.service; do \
 	    systemctl disable $name; done
