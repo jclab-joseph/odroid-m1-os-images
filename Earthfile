@@ -14,7 +14,8 @@ image-rootfs:
 	    openssh-server openssh-sftp-server rsync \
 	    net-tools sysstat smartmontools systemd systemd-timesyncd \
 	    firmware-linux-free \
-	    cloud-guest-utils e2fsprogs
+	    cloud-guest-utils e2fsprogs \
+	    sudo isc-dhcp-client
 
 	COPY pveport.gpg /tmp/pveport.gpg
 	RUN  apt-key add /tmp/pveport.gpg && \
@@ -24,12 +25,19 @@ image-rootfs:
 	    apt install -y --no-install-recommends -o Dpkg::Options::="--force-confdef" pve-manager && \
 	    apt install -y -o Dpkg::Options::="--force-confdef" proxmox-ve
 	
+	RUN for name in pve-cluster.service pve-firewall.service pve-ha-crm.service pve-ha-lrm.service pve-lxc-syscalld.service pveproxy.service pvedaemon.service; do systemctl disable $name; done
+	
+	COPY opt /opt
+	COPY pve-initialize.service /lib/systemd/system/pve-initialize.service
+
+	RUN systemctl enable pve-initialize.service
+	
 	SAVE ARTIFACT --keep-own /. rootfs
 
 disk:
 	FROM alpine
 	RUN apk add \
-	    bash e2fsprogs sfdisk mtools dosfstools losetup wget curl zstd \
+	    bash e2fsprogs uuidgen sfdisk mtools dosfstools losetup wget curl zstd \
 	    u-boot-tools
 	WORKDIR /build
 	COPY --platform=linux/arm64 +image-rootfs/rootfs /build/rootfs

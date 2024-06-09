@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxmox first time initializer
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/proxmox-initialize.sh
+
+[Install]
+WantedBy=multi-user.target
+

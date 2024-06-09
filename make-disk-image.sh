@@ -9,6 +9,7 @@ set -ex
 # - DISK_OUT
 
 BOOT_SIZE=256
+BOOT_UUID=$(uuidgen)
 
 ROOTFS_SIZE=$(du -sm ${ROOTFS_DIR} | cut -f1)
 ROOTFS_SIZE=$(($ROOTFS_SIZE + $ROOTFS_ADD_SIZE))
@@ -48,7 +49,7 @@ trap cleanup EXIT
 BOOT_DEV=$(losetup -f ${DISK_OUT} --show -o $((512 * 2048)) --sizelimit $((512 * 524288)))
 ROOTFS_DEV=$(losetup -f ${DISK_OUT} --show -o $((512 * 526336)))
 
-mkfs.ext2 -L BOOT ${BOOT_DEV}
+mkfs.ext2 -L BOOT -U "${BOOT_UUID}" ${BOOT_DEV}
 
 MOUNT_ROOT=/mnt/rootfs
 mkdir -p "${MOUNT_ROOT}"
@@ -65,6 +66,13 @@ mkdir -p ${MOUNT_ROOT}/boot/grub/
 
 sed "s/{ROOTFS_UUID}/${ROOTFS_UUID}/g; s/{KERNEL_VERSION}/${KERNEL_VERSION}/g" /build/boot.template/boot.txt > /build/boot.txt
 mkimage -A arm64 -T script -C none -n "boot script" -d /build/boot.txt ${MOUNT_ROOT}/boot/boot.scr
+
+cat > ${MOUNT_ROOT}/etc/fstab <<EOF
+# <file system> <mount point> <type> <options> <dump> <pass>
+UUID=${ROOTFS_UUID} / ext4 errors=remount-ro 0 1
+UUID=${BOOT_UUID} /boot ext2 defaults 0 1
+
+EOF
 
 chmod +x ${MOUNT_ROOT}/tmp/target-setup.sh
 chroot ${MOUNT_ROOT} /tmp/target-setup.sh
