@@ -27,6 +27,9 @@ image-rootfs:
 	
 	RUN for name in pve-cluster.service pve-firewall.service pve-ha-crm.service pve-ha-lrm.service pve-lxc-syscalld.service pveproxy.service pvedaemon.service; do systemctl disable $name; done
 	
+	# Enable root login with SSH using sed
+	RUN sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+	
 	COPY opt /opt
 	COPY pve-initialize.service /lib/systemd/system/pve-initialize.service
 
