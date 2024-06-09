@@ -5,7 +5,7 @@ if [ -e /etc/network/interfaces ]; then
 fi
 
 
-interfaces="$(ls /sys/class/net | grep -v lo)"
+interfaces="$(ls /sys/class/net | grep -v lo | grep -E '^e')"
 
 {
 cat <<EOF
