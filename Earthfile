@@ -32,6 +32,8 @@ image-rootfs:
 
 	RUN systemctl enable pve-initialize.service
 	
+	RUN echo "root:proxmox" | chpasswd
+	
 	SAVE ARTIFACT --keep-own /. rootfs
 
 disk:
