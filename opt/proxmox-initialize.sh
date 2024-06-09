@@ -37,4 +37,5 @@ for iface in $interfaces; do
 done
 } | tee /etc/network/interfaces
 
+systemctl restart networking.service
 

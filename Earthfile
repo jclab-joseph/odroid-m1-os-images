@@ -15,7 +15,7 @@ image-rootfs:
 	    net-tools sysstat smartmontools systemd systemd-timesyncd \
 	    firmware-linux-free \
 	    cloud-guest-utils e2fsprogs \
-	    sudo isc-dhcp-client
+	    sudo ifupdown2 isc-dhcp-client
 
 	COPY pveport.gpg /tmp/pveport.gpg
 	RUN  apt-key add /tmp/pveport.gpg && \
@@ -23,12 +23,15 @@ image-rootfs:
 	
 	RUN apt-get update && apt dist-upgrade -y && \
 	    apt install -y --no-install-recommends -o Dpkg::Options::="--force-confdef" pve-manager && \
-	    apt install -y -o Dpkg::Options::="--force-confdef" proxmox-ve
+	    apt install -y-o Dpkg::Options::="--force-confdef" proxmox-ve
 	
-	RUN for name in pve-cluster.service pve-firewall.service pve-ha-crm.service pve-ha-lrm.service pve-lxc-syscalld.service pveproxy.service pvedaemon.service; do systemctl disable $name; done
+	RUN /bin/false
+	
+	RUN for name in pve-cluster.service pve-firewall.service pve-guests.service pve-ha-crm.service pve-ha-lrm.service pvedaemon.service pvefw-logger.service pveproxy.service pvescheduler.service pvestatd.service; do \
+	    systemctl disable $name; done
 	
 	# Enable root login with SSH using sed
-	RUN sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+	RUN sed -i -E 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 	
 	COPY opt /opt
 	COPY pve-initialize.service /lib/systemd/system/pve-initialize.service
