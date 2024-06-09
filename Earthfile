@@ -35,7 +35,9 @@ image-rootfs:
 	COPY pve-initialize.service /lib/systemd/system/pve-initialize.service
 
 	RUN systemctl enable pve-initialize.service && \
-	    rm -f /etc/network/interfaces
+	    rm -f /etc/network/interfaces && \
+	    mkdir -p /var/log/pveproxy/ && \
+	    chown www-data:www-data /var/log/pveproxy/
 	
 	RUN echo "root:proxmox" | chpasswd
 	

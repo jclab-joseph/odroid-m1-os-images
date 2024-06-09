@@ -28,4 +28,6 @@ for name in ${service_names}; do
 	systemctl start $name
 done
 
+echo "Rebooting..."
+reboot
 
