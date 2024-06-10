@@ -57,7 +57,7 @@ disk:
 	
 	COPY make-disk-image.sh target-setup.sh .
 	RUN mkdir -p tmp-copy
-	RUN wget -O tmp-copy/linux-image.deb https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r4/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb
+	RUN wget -O tmp-copy/linux-image.deb https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb
 	RUN --privileged DISK_OUT=/build/disk.img ROOTFS_DIR=/build/rootfs BOOT_ADD_DIR=/build/boot ROOTFS_ADD_SIZE=1024 ./make-disk-image.sh
 	
 	RUN zstd /build/disk.img
