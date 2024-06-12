@@ -18,12 +18,12 @@ jobs:
         uses: docker/setup-qemu-action@v2
       - name: Build
         run: |
-          earthly --ci --allow-privileged --output +disk
+          earthly --ci --allow-privileged --output +all
           ls -al
       - uses: actions/upload-artifact@v3
         with:
           path: |
-            build/*
+            output/*
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
@@ -31,4 +31,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            build/*
+            output/*

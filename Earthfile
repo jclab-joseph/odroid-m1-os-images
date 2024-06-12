@@ -1,6 +1,6 @@
 VERSION 0.6
 
-image-rootfs:
+base-rootfs:
 	FROM --platform=linux/arm64 debian:bookworm
 	
 	ARG DEBIAN_FRONTEND=noninteractive
@@ -17,6 +17,17 @@ image-rootfs:
 	    cloud-guest-utils e2fsprogs \
 	    sudo ifupdown2 isc-dhcp-client
 
+debian-rootfs:
+	FROM --platform=linux/arm64 +base-rootfs
+	
+	RUN useradd -m -s /bin/bash -G sudo admin && \
+	    echo "admin:debian" | chpasswd
+	
+	SAVE ARTIFACT --keep-own /. rootfs
+	
+proxmox-rootfs:
+	FROM --platform=linux/arm64 +base-rootfs
+	
 	COPY pveport.gpg /tmp/pveport.gpg
 	RUN  apt-key add /tmp/pveport.gpg && \
 	     echo "deb https://mirrors.apqa.cn/proxmox/debian/pve/ bookworm port ceph-reef" | tee /etc/apt/sources.list.d/apqa-pve.list
@@ -42,14 +53,16 @@ image-rootfs:
 	RUN echo "root:proxmox" | chpasswd
 	
 	SAVE ARTIFACT --keep-own /. rootfs
-
+	
 disk:
+	ARG FLAVOR
+	
 	FROM alpine
 	RUN apk add \
 	    bash e2fsprogs uuidgen sfdisk mtools dosfstools losetup wget curl zstd \
 	    u-boot-tools
 	WORKDIR /build
-	COPY --platform=linux/arm64 +image-rootfs/rootfs /build/rootfs
+	COPY --platform=linux/arm64 +${FLAVOR}-rootfs/rootfs /build/rootfs
 	COPY boot /build/boot
 	COPY boot.template /build/boot.template
 	COPY extend-rootfs.sh /build/rootfs/opt/extend-rootfs.sh
@@ -61,5 +74,12 @@ disk:
 	RUN --privileged DISK_OUT=/build/disk.img ROOTFS_DIR=/build/rootfs BOOT_ADD_DIR=/build/boot ROOTFS_ADD_SIZE=1024 ./make-disk-image.sh
 	
 	RUN zstd /build/disk.img
-	SAVE ARTIFACT /build/disk.img.zst AS LOCAL build/disk.img.zst
+	SAVE ARTIFACT /build/disk.img.zst disk.img.zst
 
+all:
+	LOCALLY
+	RUN mkdir -p ./output/
+	# BUILD +disk --FLAVOR=proxmox
+	COPY (+disk/disk.img.zst --FLAVOR=debian) ./output/debian-disk.img.zst
+	COPY (+disk/disk.img.zst --FLAVOR=proxmox) ./output/proxmox-disk.img.zst
+	
