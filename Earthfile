@@ -77,9 +77,10 @@ disk:
 	SAVE ARTIFACT /build/disk.img.zst disk.img.zst
 
 all:
-	LOCALLY
+	FROM alpine
 	RUN mkdir -p ./output/
 	# BUILD +disk --FLAVOR=proxmox
 	COPY (+disk/disk.img.zst --FLAVOR=debian) ./output/debian-disk.img.zst
 	COPY (+disk/disk.img.zst --FLAVOR=proxmox) ./output/proxmox-disk.img.zst
+	SAVE ARTIFACT ./output/* AS LOCAL output/
 	
