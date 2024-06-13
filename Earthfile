@@ -28,7 +28,7 @@ debian-rootfs:
 proxmox-rootfs:
 	FROM --platform=linux/arm64 +base-rootfs
 	
-	COPY pveport.gpg /tmp/pveport.gpg
+	COPY proxmox/pveport.gpg /tmp/pveport.gpg
 	RUN  apt-key add /tmp/pveport.gpg && \
 	     echo "deb https://mirrors.apqa.cn/proxmox/debian/pve/ bookworm port ceph-reef" | tee /etc/apt/sources.list.d/apqa-pve.list
 	
@@ -42,8 +42,8 @@ proxmox-rootfs:
 	# Enable root login with SSH using sed
 	RUN sed -i -E 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
 	
-	COPY opt /opt
-	COPY pve-initialize.service /lib/systemd/system/pve-initialize.service
+	COPY proxmox/opt /opt
+	COPY proxmox/pve-initialize.service /lib/systemd/system/pve-initialize.service
 
 	RUN systemctl enable pve-initialize.service && \
 	    rm -f /etc/network/interfaces && \
@@ -63,24 +63,29 @@ disk:
 	    u-boot-tools
 	WORKDIR /build
 	COPY --platform=linux/arm64 +${FLAVOR}-rootfs/rootfs /build/rootfs
-	COPY boot /build/boot
-	COPY boot.template /build/boot.template
+	
+	ARG BOARD
+	ARG KERNEL_VER
+	ARG KERNEL_URL
+	COPY boards/${BOARD} board
 	COPY extend-rootfs.sh /build/rootfs/opt/extend-rootfs.sh
 	RUN chmod +x /build/rootfs/opt/extend-rootfs.sh
 	
-	COPY make-disk-image.sh target-setup.sh .
 	RUN mkdir -p tmp-copy
-	RUN wget -O tmp-copy/linux-image.deb https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb
-	RUN --privileged DISK_OUT=/build/disk.img ROOTFS_DIR=/build/rootfs BOOT_ADD_DIR=/build/boot ROOTFS_ADD_SIZE=1024 ./make-disk-image.sh
+	RUN wget -O tmp-copy/linux-image.deb "${KERNEL_URL}"
+	RUN --privileged DISK_OUT=/build/disk.img ROOTFS_DIR=/build/rootfs ROOTFS_ADD_SIZE=1024 BOARD_DIR=${PWD}/board ./board/make-disk-image.sh
 	
 	RUN zstd /build/disk.img
-	SAVE ARTIFACT /build/disk.img.zst disk.img.zst
+	SAVE ARTIFACT /build/disk.img.zst ${BOARD}_${FLAVOR}-disk.img.zst
 
 all:
 	FROM alpine
 	RUN mkdir -p ./output/
-	# BUILD +disk --FLAVOR=proxmox
-	COPY (+disk/disk.img.zst --FLAVOR=debian) ./output/debian-disk.img.zst
-	COPY (+disk/disk.img.zst --FLAVOR=proxmox) ./output/proxmox-disk.img.zst
+	COPY (+disk/ --FLAVOR=debian --BOARD=odroid-m1 --KERNEL_VER=5.10.198-odroid-arm64 --KERNEL_URL=https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb) ./output/
+	COPY (+disk/ --FLAVOR=proxmox --BOARD=odroid-m1 --KERNEL_VER=5.10.198-odroid-arm64 --KERNEL_URL=https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb) ./output/
+	COPY (+disk/ --FLAVOR=debian --BOARD=orangepi5plus --KERNEL_VER=6.1.43 --KERNEL_URL=https://github.com/jclab-joseph/armbian-rockchip-kernel-builder/releases/download/kernel-6.1.43-r01/linux-image-6.1.43_6.1.43-1_arm64.deb) ./output/
+	COPY (+disk/ --FLAVOR=proxmox --BOARD=orangepi5plus --KERNEL_VER=6.1.43 --KERNEL_URL=https://github.com/jclab-joseph/armbian-rockchip-kernel-builder/releases/download/kernel-6.1.43-r01/linux-image-6.1.43_6.1.43-1_arm64.deb) ./output/
+	# COPY (+disk/ --FLAVOR=debian --BOARD= --KERNEL_VER= --KERNEL_URL= ) ./output/
+	# COPY (+disk/ --FLAVOR=proxmox --BOARD= --KERNEL_VER= --KERNEL_URL= ) ./output/
 	SAVE ARTIFACT ./output/* AS LOCAL output/
 	
