@@ -55,13 +55,13 @@ proxmox-rootfs:
 	SAVE ARTIFACT --keep-own /. rootfs
 	
 disk:
-	ARG FLAVOR
-	
 	FROM alpine
 	RUN apk add \
 	    bash e2fsprogs uuidgen sfdisk mtools dosfstools losetup wget curl zstd \
 	    u-boot-tools
 	WORKDIR /build
+	
+	ARG FLAVOR
 	COPY --platform=linux/arm64 +${FLAVOR}-rootfs/rootfs /build/rootfs
 	
 	ARG BOARD
@@ -76,20 +76,20 @@ disk:
 	RUN --privileged DISK_OUT=/build/disk.img ROOTFS_DIR=/build/rootfs ROOTFS_ADD_SIZE=1024 BOARD_DIR=${PWD}/board ./board/make-disk-image.sh
 	
 	RUN zstd /build/disk.img
-	SAVE ARTIFACT /build/disk.img.zst ${BOARD}_${FLAVOR}-disk.img.zst
+	SAVE ARTIFACT /build/disk.img.zst ${BOARD}_${FLAVOR}-disk.img.zst AS LOCAL output/
 
 all:
 	FROM alpine
 	RUN mkdir -p ./output/
 	ARG BOARD_odroidm1_KERNEL_VER=5.10.198-odroid-arm64
 	ARG BOARD_odroidm1_KERNEL_URL=https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb
-	COPY (+disk/ --FLAVOR=debian --BOARD=odroid-m1 --KERNEL_VER=${BOARD_odroidm1_KERNEL_VER} --KERNEL_URL=${BOARD_odroidm1_KERNEL_URL}) ./output/
-	COPY (+disk/ --FLAVOR=proxmox --BOARD=odroid-m1 --KERNEL_VER=${BOARD_odroidm1_KERNEL_VER} --KERNEL_URL=${BOARD_odroidm1_KERNEL_URL}) ./output/
+	BUILD +disk --FLAVOR=debian --BOARD=odroid-m1 --KERNEL_VER=${BOARD_odroidm1_KERNEL_VER} --KERNEL_URL=${BOARD_odroidm1_KERNEL_URL}
+	BUILD +disk --FLAVOR=proxmox --BOARD=odroid-m1 --KERNEL_VER=${BOARD_odroidm1_KERNEL_VER} --KERNEL_URL=${BOARD_odroidm1_KERNEL_URL}
 	ARG BOARD_orangepi5plus_KERNEL_VER=6.1.43
 	ARG BOARD_orangepi5plus_KERNEL_URL=https://github.com/jclab-joseph/armbian-rockchip-kernel-builder/releases/download/nightly/linux-image-6.1.43_6.1.43-1_arm64.deb
-	COPY (+disk/ --FLAVOR=debian --BOARD=orangepi5plus --KERNEL_VER=${BOARD_orangepi5plus_KERNEL_VER} --KERNEL_URL=${BOARD_orangepi5plus_KERNEL_URL}) ./output/
-	COPY (+disk/ --FLAVOR=proxmox --BOARD=orangepi5plus --KERNEL_VER=${BOARD_orangepi5plus_KERNEL_VER} --KERNEL_URL=${BOARD_orangepi5plus_KERNEL_URL}) ./output/
+	BUILD +disk --FLAVOR=debian --BOARD=orangepi5plus --KERNEL_VER=${BOARD_orangepi5plus_KERNEL_VER} --KERNEL_URL=${BOARD_orangepi5plus_KERNEL_URL}
+	BUILD +disk --FLAVOR=proxmox --BOARD=orangepi5plus --KERNEL_VER=${BOARD_orangepi5plus_KERNEL_VER} --KERNEL_URL=${BOARD_orangepi5plus_KERNEL_URL}
 	# COPY (+disk/ --FLAVOR=debian --BOARD= --KERNEL_VER= --KERNEL_URL= ) ./output/
 	# COPY (+disk/ --FLAVOR=proxmox --BOARD= --KERNEL_VER= --KERNEL_URL= ) ./output/
-	SAVE ARTIFACT ./output/* AS LOCAL output/
+	# SAVE ARTIFACT ./output/* AS LOCAL output/
 	
