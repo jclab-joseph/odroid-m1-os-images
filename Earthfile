@@ -78,6 +78,17 @@ disk:
 	RUN zstd /build/disk.img
 	SAVE ARTIFACT /build/disk.img.zst ${BOARD}_${FLAVOR}-disk.img.zst AS LOCAL output/
 
+single-board:
+	FROM alpine
+	RUN mkdir -p ./output/
+	
+	ARG BOARD
+	ARG KERNEL_VER
+	ARG KERNEL_URL
+	
+	BUILD +disk --FLAVOR=debian --BOARD=${BOARD} --KERNEL_VER={KERNEL_VER} --KERNEL_URL=${KERNEL_URL}
+	BUILD +disk --FLAVOR=proxmox --BOARD=${BOARD} --KERNEL_VER={KERNEL_VER} --KERNEL_URL=${KERNEL_URL}
+
 all:
 	FROM alpine
 	RUN mkdir -p ./output/
