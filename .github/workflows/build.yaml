@@ -12,7 +12,7 @@ jobs:
       matrix:
         board:
           - {"board": "odroid-m1", "kernel_ver": "5.10.198-odroid-arm64", "kernel_url": "https://github.com/jclab-joseph/odroid-m1-kernel-builder/releases/download/v5.10.198-r5/linux-image-5.10.198-odroid-arm64_5.10.198-odroid-arm64-1_arm64.deb"}
-          - {"board": "orangepi3plus", "kernel_ver": "6.1.43", "kernel_url": "https://github.com/jclab-joseph/armbian-rockchip-kernel-builder/releases/download/nightly/linux-image-6.1.43_6.1.43-1_arm64.deb"}
+          - {"board": "orangepi5plus", "kernel_ver": "6.1.43", "kernel_url": "https://github.com/jclab-joseph/armbian-rockchip-kernel-builder/releases/download/nightly/linux-image-6.1.43_6.1.43-1_arm64.deb"}
     steps:
       - uses: earthly/actions-setup@v1
         with:
