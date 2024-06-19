@@ -26,9 +26,9 @@ jobs:
         run: |
           earthly --ci --allow-privileged --output +single-board --BOARD=${{ matrix.board.board }} --KERNEL_VER=${{ matrix.board.kernel_ver }} --KERNEL_URL=${{ matrix.board.kernel_url }}
           ls -al
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          namr: board‐{{ matrix.board.board }}
+          name: board‐{{ matrix.board.board }}
           path: |
             output/*
   release:
@@ -39,6 +39,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: ./artifacts/
+          merge-multiple: true
       - name: Display structure of downloaded files
         run: ls -R ./artifacts/
       - name: Release
@@ -48,4 +49,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
+            artifacts/*
             artifacts/*/*
