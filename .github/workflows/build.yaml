@@ -28,7 +28,7 @@ jobs:
           ls -al
       - uses: actions/upload-artifact@v4
         with:
-          name: board‐{{ matrix.board.board }}
+          name: board‐${{ matrix.board.board }}
           path: |
             output/*
   release:
