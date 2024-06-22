@@ -1,11 +1,10 @@
 MENU TITLE Select the kernel to boot
 TIMEOUT 5
 DEFAULT debian
-LABEL	debian
+LABEL debian
 	LINUX	/vmlinuz
 	INITRD	/initrd.img
-	#FDTDIR	/dtbs/{KERNEL_VER}/
+	#FDTDIR	/dtbs/{KERNEL_VER}
 	FDT	/dtbs/{KERNEL_VER}/rockchip/rk3588-orangepi-5-plus.dtb
-	FDTOVERLAYS	{KERNEL_VER}
 	APPEND	root=UUID={ROOTFS_UUID} rw console=/dev/ttyFIQ0,1500000n8
 
