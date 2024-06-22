@@ -8,6 +8,9 @@ set -ex
 # - DISK_OUT
 # - KERNEL_VER
 
+BOOT_SIZE=256
+BOOT_UUID=$(uuidgen)
+
 ROOTFS_SIZE=$(du -sm ${ROOTFS_DIR} | cut -f1)
 ROOTFS_SIZE=$(($ROOTFS_SIZE + $ROOTFS_ADD_SIZE))
 
@@ -17,7 +20,7 @@ ROOTFS_UUID=5d7fe326-d149-4be7-a57c-b71ed13784c8
 
 mke2fs -L 'rootfs' -U ${ROOTFS_UUID} -N 0 -d "${ROOTFS_DIR}" -m 5 -r 1 -t ext4 "${ROOTFS_OUT}" ${ROOTFS_SIZE}M
 
-DISK_SIZE=$((16 + 256 + $ROOTFS_SIZE))
+DISK_SIZE=$((16 + $BOOT_SIZE + $ROOTFS_SIZE))
 dd if=/dev/zero of=${DISK_OUT} bs=1M count=${DISK_SIZE}
 dd if=${ROOTFS_OUT} of=${DISK_OUT} bs=1M seek=16 conv=notrunc
 gzip -dc ${BOARD_DIR}/rkloader-mainline-master-orangepi-5-plus-rk3588-r93294.1ebd659cf0-bl31-v1.45-ddr-v1.16-idbloader.img.gz | dd of=${DISK_OUT} bs=512 seek=64 conv=notrunc
