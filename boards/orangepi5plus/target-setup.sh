@@ -6,6 +6,13 @@ apt-get install -y /tmp/linux-image.deb
 
 ( \
 	cd /boot && \
+	for name in $(ls vmlinuz-* || true); do \
+		mv $name ${name}.gz && gzip -d ${name}.gz \
+	done \
+)
+
+( \
+	cd /boot && \
 	ln -s $(find -type f -name "vmlinuz-*" | head -n 1) vmlinuz && \
 	ln -s $(find -type f -name "initrd.img-*" | head -n 1) initrd.img \
 )
