@@ -7,7 +7,7 @@ apt-get install -y /tmp/linux-image.deb
 ( \
 	cd /boot && \
 	for name in $(ls vmlinuz-* || true); do \
-		mv $name ${name}.gz && gzip -d ${name}.gz \
+		mv $name ${name}.gz && gzip -d ${name}.gz; \
 	done \
 )
 
