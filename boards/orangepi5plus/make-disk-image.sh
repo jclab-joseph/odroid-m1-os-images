@@ -35,7 +35,7 @@ unit: sectors
 
 start=64, size=8000, type=0
 start=16384, size=8192, type=0
-start=32768, size=524288, type=0c
+start=32768, size=524288, type=0c, bootable
 start=557056, size=+${ROOTFS_SIZE}M, type=83
 EOF
 
