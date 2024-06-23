@@ -1,5 +1,5 @@
 MENU TITLE Select the kernel to boot
-TIMEOUT 5
+TIMEOUT 30
 DEFAULT debian
 LABEL debian
 	LINUX	/vmlinuz
